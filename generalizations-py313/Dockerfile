@@ -34,6 +34,14 @@ RUN apt-get update && \
 RUN uv pip install --no-cache -r /tmp/requirements.txt && \
     rm /tmp/requirements.txt
 
+# nvidia-cuda-nvrtc (pulled in via torch's cuda-toolkit dependency) ships
+# libnvrtc-builtins.so.13.0 under nvidia/cu13/lib/, alongside libnvrtc.so.13
+# itself -- but that directory isn't on the default library search path, so
+# NVRTC fails to open its own builtins companion when JIT-compiling kernels
+# (e.g. lgamma, used by torchid's ESS estimator) with "failed to open
+# libnvrtc-builtins.so.13.0". Add it to LD_LIBRARY_PATH so NVRTC can find it.
+ENV LD_LIBRARY_PATH="/opt/venv/lib/python3.13/site-packages/nvidia/cu13/lib:${LD_LIBRARY_PATH}"
+
 # Install ngrok
 RUN curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
 	| sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null \
