@@ -30,16 +30,8 @@ RUN apt-get update && \
 	uv pip install --no-cache /tmp/ripserplusplus-1.1.2 && \
 	rm -rf /tmp/download_verify_rpp.py /tmp/ripserplusplus-1.1.2 /tmp/ripserplusplus-1.1.2.tar.gz /var/lib/apt/lists/*
 
-# Install dependencies directly into the base image's venv.
-# --extra-index-url/--index-strategy match how requirements.txt was compiled
-# (see requirements.in): torch/torchvision/torchaudio are pinned to their
-# +cu128 builds so they pull the old-style nvidia-*-cu12 packages, consistent
-# with faiss-cuda-cu128 and this image's CUDA 12.x base -- uv doesn't embed
-# these flags into the compiled requirements.txt, so they must be repeated here.
-RUN uv pip install --no-cache \
-        --extra-index-url https://download.pytorch.org/whl/cu128 \
-        --index-strategy unsafe-best-match \
-        -r /tmp/requirements.txt && \
+# Install dependencies directly into the base image's venv
+RUN uv pip install --no-cache -r /tmp/requirements.txt && \
     rm /tmp/requirements.txt
 
 # Install ngrok

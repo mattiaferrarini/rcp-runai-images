@@ -1,18 +1,6 @@
---extra-index-url https://download.pytorch.org/whl/cu128
-
 python-dotenv
 datasets
-# Pinned to the explicit cu128 wheel (rather than plain PyPI's default build,
-# which for torch>=2.11 resolves to a CUDA 13 build depending on NVIDIA's new
-# unified cuda-toolkit packaging). The base image ships CUDA 12.2, and
-# faiss-cuda-cu128 already pulls the old-style nvidia-*-cu12 packages, so
-# aligning torch onto the same cu128/nvidia-*-cu12 family avoids ending up
-# with two incompatible NVIDIA CUDA packaging generations installed at once
-# (that mismatch is what breaks NVRTC's JIT compilation at runtime with
-# "failed to open libnvrtc-builtins.so.13.0").
-torch==2.11.0+cu128
-torchvision==0.26.0+cu128
-torchaudio==2.11.0+cu128
+torch
 transformers
 peft
 trl
