@@ -27,17 +27,7 @@ rpf() {
     kubectl port-forward $1-0-0 2222:22
 }
 
-rs() {
-    local pvc_name
-    if [ "$RUNAI_CURRENT_CTX" = "rcp" ]; then
-        pvc_name="dlab-scratch"
-    else
-        pvc_name="runai-dlab-{GASPAR_NAME}-scratch"
-    fi
-    runai_context submit -i ghcr.io/mattiaferrarini/dlab-runai-images/unified:master --pvc "$pvc_name:/mnt" "$@"
-}
-
-rs_cpu() {
+rs_cpu_gen() {
     if [ $# -lt 2 ]; then
         echo "Usage: rs_cpu <cpu-count> <job-name> [flags...] [-- <command...>]"
         return 1
@@ -75,7 +65,7 @@ rs_cpu() {
         pvc_name="runai-dlab-{GASPAR_NAME}-scratch" # Replace {GASPAR_NAME} if needed
     fi
     
-    runai_context submit -i ghcr.io/mattiaferrarini/dlab-runai-images/unified:master \
+    runai_context submit -i ghcr.io/mattiaferrarini/rcp-runai-images/generalizations:master \
         --pvc "$pvc_name:/mnt" \
         --cpu "$cpu_count" \
         "${submit_args[@]}" \
@@ -95,14 +85,14 @@ rs_gen() {
     local job_name="$1"
     shift # Remove the job name from the arguments list, leaving only the command to run
     
-    runai_context submit -i ghcr.io/mattiaferrarini/dlab-runai-images/generalizations:master \
+    runai_context submit -i ghcr.io/mattiaferrarini/rcp-runai-images/generalizations:master \
         --pvc "$pvc_name:/mnt" \
         -g 1.0 \
         "$job_name" \
         -- "cd understanding-weird-generalizations && $*"
 }
 
-rs_inf() {
+rs_gen_2() {
     local pvc_name
     if [ "$RUNAI_CURRENT_CTX" = "rcp" ]; then
         pvc_name="dlab-scratch"
@@ -114,90 +104,72 @@ rs_inf() {
     local job_name="$1"
     shift # Remove the job name from the arguments list, leaving only the command to run
     
-    runai_context submit -i ghcr.io/mattiaferrarini/dlab-runai-images/inference:master \
-        --pvc "$pvc_name:/mnt" \
-        -g 1.0 \
-        "$job_name" \
-        -- "cd understanding-weird-generalizations && $*"
-}
-
-rs_uni() {
-    local pvc_name
-    if [ "$RUNAI_CURRENT_CTX" = "rcp" ]; then
-        pvc_name="dlab-scratch"
-    else
-        pvc_name="runai-dlab-{GASPAR_NAME}-scratch" # Replace {GASPAR_NAME} if needed
-    fi
-    
-    # The first argument is the job name
-    local job_name="$1"
-    shift # Remove the job name from the arguments list, leaving only the command to run
-    
-    runai_context submit -i ghcr.io/mattiaferrarini/dlab-runai-images/unified:master \
-        --pvc "$pvc_name:/mnt" \
-        -g 1.0 \
-        "$job_name" \
-        -- "cd understanding-weird-generalizations && $*"
-}
-
-rs_uni_2() {
-    local pvc_name
-    if [ "$RUNAI_CURRENT_CTX" = "rcp" ]; then
-        pvc_name="dlab-scratch"
-    else
-        pvc_name="runai-dlab-{GASPAR_NAME}-scratch" # Replace {GASPAR_NAME} if needed
-    fi
-
-    # The first argument is the job name
-    local job_name="$1"
-    shift # Remove the job name from the arguments list, leaving only the command to run
-
-    runai_context submit -i ghcr.io/mattiaferrarini/dlab-runai-images/unified:master \
+    runai_context submit -i ghcr.io/mattiaferrarini/rcp-runai-images/generalizations:master \
         --pvc "$pvc_name:/mnt" \
         -g 2.0 \
         "$job_name" \
         -- "cd understanding-weird-generalizations && $*"
 }
 
-rs_uni_3() {
+rs_gen_3() {
     local pvc_name
     if [ "$RUNAI_CURRENT_CTX" = "rcp" ]; then
         pvc_name="dlab-scratch"
     else
         pvc_name="runai-dlab-{GASPAR_NAME}-scratch" # Replace {GASPAR_NAME} if needed
     fi
-
+    
     # The first argument is the job name
     local job_name="$1"
     shift # Remove the job name from the arguments list, leaving only the command to run
-
-    runai_context submit -i ghcr.io/mattiaferrarini/dlab-runai-images/unified:master \
+    
+    runai_context submit -i ghcr.io/mattiaferrarini/rcp-runai-images/generalizations:master \
         --pvc "$pvc_name:/mnt" \
         -g 3.0 \
         "$job_name" \
         -- "cd understanding-weird-generalizations && $*"
 }
 
-rs_uni_4() {
+rs_gen_4() {
     local pvc_name
     if [ "$RUNAI_CURRENT_CTX" = "rcp" ]; then
         pvc_name="dlab-scratch"
     else
         pvc_name="runai-dlab-{GASPAR_NAME}-scratch" # Replace {GASPAR_NAME} if needed
     fi
-
+    
     # The first argument is the job name
     local job_name="$1"
     shift # Remove the job name from the arguments list, leaving only the command to run
-
-    runai_context submit -i ghcr.io/mattiaferrarini/dlab-runai-images/unified:master \
+    
+    runai_context submit -i ghcr.io/mattiaferrarini/rcp-runai-images/generalizations:master \
         --pvc "$pvc_name:/mnt" \
         -g 4.0 \
         "$job_name" \
         -- "cd understanding-weird-generalizations && $*"
 }
 
-rs_uni_2_interactive() {
+rs_gen_fast() {
+    local pvc_name
+    if [ "$RUNAI_CURRENT_CTX" = "rcp" ]; then
+        pvc_name="dlab-scratch"
+    else
+        pvc_name="runai-dlab-{GASPAR_NAME}-scratch" # Replace {GASPAR_NAME} if needed
+    fi
+    
+    # The first argument is the job name
+    local job_name="$1"
+    shift # Remove the job name from the arguments list, leaving only the command to run
+    
+    runai_context submit -i ghcr.io/mattiaferrarini/rcp-runai-images/generalizations:master \
+        --pvc "$pvc_name:/mnt" \
+        --node-pools h100  \
+        -g 1.0 \
+        "$job_name" \
+        -- "cd understanding-weird-generalizations && $*"
+}
+
+rs_gen_313_fast() {
     local pvc_name
     if [ "$RUNAI_CURRENT_CTX" = "rcp" ]; then
         pvc_name="dlab-scratch"
@@ -208,63 +180,75 @@ rs_uni_2_interactive() {
     # The first argument is the job name
     local job_name="$1"
     shift # Remove the job name from the arguments list, leaving only the command to run
-    local minutes="${1:-60}" # Default to 60 minutes if not provided
 
-    runai_context submit -i ghcr.io/mattiaferrarini/dlab-runai-images/unified:master \
+    runai_context submit -i ghcr.io/mattiaferrarini/rcp-runai-images/generalizations-py313:master \
         --pvc "$pvc_name:/mnt" \
+        --node-pools h100  \
+        -g 1.0 \
+        "$job_name" \
+        -- "cd understanding-weird-generalizations && $*"
+}
+
+rs_gen_2_fast() {
+    local pvc_name
+    if [ "$RUNAI_CURRENT_CTX" = "rcp" ]; then
+        pvc_name="dlab-scratch"
+    else
+        pvc_name="runai-dlab-{GASPAR_NAME}-scratch" # Replace {GASPAR_NAME} if needed
+    fi
+    
+    # The first argument is the job name
+    local job_name="$1"
+    shift # Remove the job name from the arguments list, leaving only the command to run
+    
+    runai_context submit -i ghcr.io/mattiaferrarini/rcp-runai-images/generalizations:master \
+        --pvc "$pvc_name:/mnt" \
+        --node-pools h100  \
         -g 2.0 \
-        --interactive \
-        --preemptible \
-        --node-pools default \
         "$job_name" \
-        -- "sleep $((minutes * 60))"
+        -- "cd understanding-weird-generalizations && $*"
 }
 
-rs_uni_3_interactive() {
+rs_gen_3_fast() {
     local pvc_name
     if [ "$RUNAI_CURRENT_CTX" = "rcp" ]; then
         pvc_name="dlab-scratch"
     else
         pvc_name="runai-dlab-{GASPAR_NAME}-scratch" # Replace {GASPAR_NAME} if needed
     fi
-
+    
     # The first argument is the job name
     local job_name="$1"
     shift # Remove the job name from the arguments list, leaving only the command to run
-    local minutes="${1:-60}" # Default to 60 minutes if not provided
-
-    runai_context submit -i ghcr.io/mattiaferrarini/dlab-runai-images/unified:master \
+    
+    runai_context submit -i ghcr.io/mattiaferrarini/rcp-runai-images/generalizations:master \
         --pvc "$pvc_name:/mnt" \
+        --node-pools h100  \
         -g 3.0 \
-        --interactive \
-        --preemptible \
-        --node-pools default \
         "$job_name" \
-        -- "sleep $((minutes * 60))"
+        -- "cd understanding-weird-generalizations && $*"
 }
 
-rs_uni_4_interactive() {
+rs_gen_4_fast() {
     local pvc_name
     if [ "$RUNAI_CURRENT_CTX" = "rcp" ]; then
         pvc_name="dlab-scratch"
     else
         pvc_name="runai-dlab-{GASPAR_NAME}-scratch" # Replace {GASPAR_NAME} if needed
     fi
-
+    
     # The first argument is the job name
     local job_name="$1"
     shift # Remove the job name from the arguments list, leaving only the command to run
-    local minutes="${1:-60}" # Default to 60 minutes if not provided
-
-    runai_context submit -i ghcr.io/mattiaferrarini/dlab-runai-images/unified:master \
+    
+    runai_context submit -i ghcr.io/mattiaferrarini/rcp-runai-images/generalizations:master \
         --pvc "$pvc_name:/mnt" \
+        --node-pools h100  \
         -g 4.0 \
-        --interactive \
-        --preemptible \
-        --node-pools default \
         "$job_name" \
-        -- "sleep $((minutes * 60))"
+        -- "cd understanding-weird-generalizations && $*"
 }
+
 
 alias rrcp="runai config cluster rcp-caas-prod && set_runai_context rcp"
 alias rl="runai list"

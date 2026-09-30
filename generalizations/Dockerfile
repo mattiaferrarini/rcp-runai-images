@@ -1,4 +1,4 @@
-ARG BASE_IMAGE="ghcr.io/mattiaferrarini/dlab-runai-images/base:master"
+ARG BASE_IMAGE="ghcr.io/mattiaferrarini/rcp-runai-images/base:master"
 FROM ${BASE_IMAGE}
 
 # Copy requirements
