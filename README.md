@@ -86,7 +86,7 @@ If you need to revert the installation:
 
 ## Available Images
 
-There are currently four images available:
+There are currently five images available:
 - **base**: `ghcr.io/mattiaferrarini/rcp-runai-images/base:master`
     - Logs you in with your GASPAR UID/GUID and sets the correct permissions
     - Installs basic packages (conda, htop, vim, ssh, etc.). 
@@ -100,6 +100,20 @@ There are currently four images available:
     - Extends the base image with the Python dependencies used by the generalizations project.
 - **generalizations-py313**: `ghcr.io/mattiaferrarini/rcp-runai-images/generalizations-py313:master`
     - Extends the Python 3.13 base image with the generalizations dependencies.
+- **mlbio**: `ghcr.io/mattiaferrarini/rcp-runai-images/mlbio:master`
+    - Extends the Python 3.13 base image for the MLBIO RunAI namespace.
+    - Uses `/mnt/mlbio/scratch/{GASPAR_USERNAME}` as the user's home directory.
+
+### MLBIO storage
+
+Submit the MLBIO image from the `runai-mlbio-{GASPAR_USERNAME}` namespace and
+mount the scratch PVC at the path expected by the image:
+
+```bash
+runai submit -i ghcr.io/mattiaferrarini/rcp-runai-images/mlbio:master \
+  --pvc mlbio-scratch:/mnt/mlbio/scratch \
+  --interactive -g 1.0 test -- sleep 3600
+```
 
 ## How to submit jobs
 (This section assumes you have installed runai using the install_runai.sh script. If you installed runai manually, be sure to replace `runai` with the correct binary.)

@@ -36,30 +36,38 @@ if ! id -u $GASPAR_USER > /dev/null 2>&1; then
         fi
     done
 
-    # Create DLAB Home Directory
-    # First determine where the scratch is mounted
+    # Determine the user's home directory. Derived images can set
+    # USER_HOME_ROOT to a lab-specific shared storage mount.
     SCRATCH=dlabscratch1
-    if [ -d "/dlabscratch1/$SCRATCH" ]; then
-        # Mounted on /dlabscratch1/$SCRATCH -> set home and do nothing
-        USER_HOME=/dlabscratch1/$SCRATCH/$GASPAR_USER
-    else if [ -d "/mnt/$SCRATCH" ]; then
-        # Mounted on /mnt/$SCRATCH -> symlink to /dlabscratch1
-        ln -s /mnt/$SCRATCH /dlabscratch1
-        USER_HOME=/$SCRATCH/$GASPAR_USER
-    else if [ -d "/$SCRATCH/$GASPAR_USER" ]; then
-        # Mounted on /$SCRATCH/$GASPAR_USER -> do nothing
-        USER_HOME=/$SCRATCH/$GASPAR_USER
+    HOME_IS_EPHEMERAL=0
+    if [ -n "${USER_HOME_ROOT:-}" ]; then
+        USER_HOME="${USER_HOME_ROOT%/}/${GASPAR_USER}"
+        if [ ! -d "$USER_HOME" ]; then
+            echo "Error: Configured home directory does not exist: $USER_HOME"
+            echo "Mount the lab storage at $USER_HOME_ROOT before starting the container."
+            exit 1
+        fi
+    elif [ -d "/$SCRATCH/$GASPAR_USER" ]; then
+        USER_HOME="/$SCRATCH/$GASPAR_USER"
+    elif [ -d "/mnt/$SCRATCH/$GASPAR_USER" ]; then
+        # Mounted on /mnt/dlabscratch1 -> retain the historical home path.
+        if [ ! -e "/$SCRATCH" ]; then
+            ln -s "/mnt/$SCRATCH" "/$SCRATCH"
+            USER_HOME="/$SCRATCH/$GASPAR_USER"
+        else
+            USER_HOME="/mnt/$SCRATCH/$GASPAR_USER"
+        fi
     else
-        # No scratch mounted -> create home in /home
-        USER_HOME=/home/${GASPAR_USER}
-        mkdir -p $USER_HOME
-    fi fi fi
+        USER_HOME="/home/${GASPAR_USER}"
+        mkdir -p "$USER_HOME"
+        HOME_IS_EPHEMERAL=1
+    fi
 
     # Create User and add to groups
     useradd -u ${GASPAR_UID} -d $USER_HOME -s /bin/bash ${GASPAR_USER} -g ${GASPAR_GID}     
     usermod -aG $(echo $GASPAR_SUPG | tr ' ' ',') ${GASPAR_USER}
-    if ! [ -d "$SCRATCH" ]; then
-        chown -R ${GASPAR_USER}:${GASPAR_GID} $USER_HOME
+    if [ "$HOME_IS_EPHEMERAL" -eq 1 ]; then
+        chown ${GASPAR_USER}:${GASPAR_GID} "$USER_HOME"
     fi
 
     # passwordless sudo
@@ -76,7 +84,9 @@ fi
 
 # Find correct USER_HOME if it's undefined
 if [ -z "$USER_HOME" ]; then
-    if [ -d "/dlabscratch1/$GASPAR_USER" ]; then
+    if [ -n "${USER_HOME_ROOT:-}" ] && [ -d "${USER_HOME_ROOT%/}/$GASPAR_USER" ]; then
+        USER_HOME="${USER_HOME_ROOT%/}/$GASPAR_USER"
+    elif [ -d "/dlabscratch1/$GASPAR_USER" ]; then
         USER_HOME="/dlabscratch1/$GASPAR_USER"
     elif [ -d "/mnt/dlabscratch1/$GASPAR_USER" ]; then
         USER_HOME="/mnt/dlabscratch1/$GASPAR_USER"
