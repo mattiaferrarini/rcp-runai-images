@@ -27,9 +27,23 @@ rpf() {
     kubectl port-forward $1-0-0 2222:22
 }
 
+rs() {
+    local pvc_name
+    if [ "$RUNAI_CURRENT_CTX" = "rcp" ]; then
+        pvc_name="dlab-scratch"
+    else
+        pvc_name="runai-dlab-{GASPAR_NAME}-scratch"
+    fi
+
+    runai_context submit \
+        -i ghcr.io/mattiaferrarini/rcp-runai-images/generalizations:master \
+        --pvc "$pvc_name:/mnt" \
+        "$@"
+}
+
 rs_cpu_gen() {
     if [ $# -lt 2 ]; then
-        echo "Usage: rs_cpu <cpu-count> <job-name> [flags...] [-- <command...>]"
+        echo "Usage: rs_cpu_gen <cpu-count> <job-name> [flags...] [-- <command...>]"
         return 1
     fi
 

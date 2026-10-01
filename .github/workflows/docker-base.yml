@@ -8,6 +8,9 @@ env:
 
 # Configures this workflow to run every time a change is pushed to the branch called `release`.
 on:
+  # Allow rebuilding the full image chain manually. A successful base build
+  # triggers the generalizations workflow.
+  workflow_dispatch:
   push:
     # Sequence of patterns matched against refs/heads
     branches:    

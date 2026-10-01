@@ -86,7 +86,7 @@ If you need to revert the installation:
 
 ## Available Images
 
-There are currently two images available:
+There are currently four images available:
 - **base**: `ghcr.io/mattiaferrarini/rcp-runai-images/base:master`
     - Logs you in with your GASPAR UID/GUID and sets the correct permissions
     - Installs basic packages (conda, htop, vim, ssh, etc.). 
@@ -94,8 +94,12 @@ There are currently two images available:
     - Has CUDA 12.2.2 installed. 
     - Has [Powershell GO](https://github.com/justjanne/powerline-go/) installed, a shell wrapper that makes life a bit easier.
     - Automatically generates a `.bashrc` file in your $HOME if you don't have one.
-- **pytorch**: `ghcr.io/mattiaferrarini/rcp-runai-images/pytorch:master` 
-    - Creates `default` conda environment with pytorch and other default ML python libraries installed. See `pytorch/environment.yml` and `pytorch/requirements.txt` for an exhaustive list.
+- **base-py313**: `ghcr.io/mattiaferrarini/rcp-runai-images/base-py313:master`
+    - Equivalent to the base image, using Python 3.13 instead of Python 3.11.
+- **generalizations**: `ghcr.io/mattiaferrarini/rcp-runai-images/generalizations:master`
+    - Extends the base image with the Python dependencies used by the generalizations project.
+- **generalizations-py313**: `ghcr.io/mattiaferrarini/rcp-runai-images/generalizations-py313:master`
+    - Extends the Python 3.13 base image with the generalizations dependencies.
 
 ## How to submit jobs
 (This section assumes you have installed runai using the install_runai.sh script. If you installed runai manually, be sure to replace `runai` with the correct binary.)
@@ -108,15 +112,15 @@ A few examples:
 
 **Submit an interactive job which runs for 1 hour with the name `test` with 1 GPU.**
 ```
-runai submit -i ghcr.io/mattiaferrarini/rcp-runai-images/pytorch:master --pvc runai-dlab-{GASPAR_USERNAME}-scratch:/mnt --interactive -g 1.0 test -- sleep 3600
+runai submit -i ghcr.io/mattiaferrarini/rcp-runai-images/generalizations:master --pvc runai-dlab-{GASPAR_USERNAME}-scratch:/mnt --interactive -g 1.0 test -- sleep 3600
 ```
 **Submit a training job with the name `train` with 0.5 GPU.**
 ```
-runai submit -i ghcr.io/mattiaferrarini/rcp-runai-images/pytorch:master --pvc runai-dlab-{GASPAR_USERNAME}-scratch:/mnt -g 0.5 train -- python ~/trainer/train.py --my-training-arg 2
+runai submit -i ghcr.io/mattiaferrarini/rcp-runai-images/generalizations:master --pvc runai-dlab-{GASPAR_USERNAME}-scratch:/mnt -g 0.5 train -- python ~/trainer/train.py --my-training-arg 2
 ```
 **Submit an interactive job which runs for 2 hour with the name `test` with 0.5 GPU and at least 12 CPUs**
 ```
-runai submit -i ghcr.io/mattiaferrarini/rcp-runai-images/pytorch:master --pvc runai-dlab-{GASPAR_USERNAME}-scratch:/mnt -g 0.5 --cpu 12 test -- sleep 3600
+runai submit -i ghcr.io/mattiaferrarini/rcp-runai-images/generalizations:master --pvc runai-dlab-{GASPAR_USERNAME}-scratch:/mnt -g 0.5 --cpu 12 test -- sleep 3600
 ```
 
 I strongly recommend using the aliases provided by the installation script. See [RUNAI ALIASES](#runai-aliases). Should your shell not support aliases, use the [`submit.sh`](submit.sh) script (replace the binaries and ENVS in the file first).
@@ -136,7 +140,7 @@ On the IC cluster, we select the node type with the flag `--node-type G10`.
 * ICC: [S8|G9|G10]  "S8" (CPU only), "G9" (Nvidia V100) or "G10" (Nvidia A100)
 
 ```
-runai submit -i ghcr.io/mattiaferrarini/rcp-runai-images/pytorch:master --pvc runai-dlab-{GASPAR_USERNAME}-scratch:/mnt --interactive -g 1.0 --node-type G10 test -- sleep 3600
+runai submit -i ghcr.io/mattiaferrarini/rcp-runai-images/generalizations:master --pvc runai-dlab-{GASPAR_USERNAME}-scratch:/mnt --interactive -g 1.0 --node-type G10 test -- sleep 3600
 ```
 #### RCP
 There are the following GPUs available: V100, A100 and also H100. The default GPU is V100. If you need one of the others add the following cmd to your runai submit:
@@ -189,7 +193,7 @@ code --remote ssh-remote+runai /dlabscratch1/path/to/your/project
 You can easily customize these images to your desire. No need to manually build docker images because GitHub will do that for you. 
 
 1. Fork this repository.
-2. Either create a new folder with a `Dockerfile` that uses `ghcr.io/mattiaferrarini/rcp-runai-images/base:master` as base image or modify the existing ones. If you just want to install other packages, you can simply modify the `pytorch/environment.yml` (for conda install) and `pytorch/requirements.txt` (for pip install) files. 
+2. Either create a new folder with a `Dockerfile` that uses `ghcr.io/mattiaferrarini/rcp-runai-images/base:master` as base image or modify the existing ones. To change the generalizations dependencies, update `generalizations/requirements.in` and regenerate `generalizations/requirements.txt` (or use the corresponding `generalizations-py313` files).
     - Should you create/modify your own `Dockerfile`, make sure that you don't overwrite the `ENTRYPOINT`. If you need to overwrite `ENTRYPOINT` make sure that it ends with: 
         ```
         ..., "/tmp/user-entrypoint.sh"]
