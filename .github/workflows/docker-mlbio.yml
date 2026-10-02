@@ -8,15 +8,11 @@ env:
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: ["base-py313"]
+    workflows: ["base-py312"]
     types:
       - completed
-  push:
-    branches:
-      - master
-    paths:
-      - 'mlbio/**'
-      - '.github/workflows/docker-mlbio.yml'
+  # Rebuild after the base is published, avoiding a race on its mutable tag.
+  # For MLBIO-only changes, use workflow_dispatch.
 
 jobs:
   build-and-push-image:
@@ -53,4 +49,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_IMAGE=${{ env.REGISTRY }}/${{ github.repository }}/base-py313:master
+            BASE_IMAGE=${{ env.REGISTRY }}/${{ github.repository }}/base-py312:master

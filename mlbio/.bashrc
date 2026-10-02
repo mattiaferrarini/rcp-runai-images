@@ -11,7 +11,7 @@ fi
 alias ..="cd .."
 alias ll="ls -lh"
 
-# Activate the global Python 3.13 environment.
+# Activate the inherited Python 3.12 environment for training and metrics.
 source /opt/venv/bin/activate > /dev/null 2>&1
 
 # Start interactive shells in the user's shared MLBIO home directory.
